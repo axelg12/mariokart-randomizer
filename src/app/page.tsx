@@ -5,34 +5,48 @@ import { tracks } from './tracks';
 
 export default function Home() {
   const [isRandomizing, setIsRandomizing] = useState(false);
-  const [currentTrack, setCurrentTrack] = useState<string | null>(null);
-  const [displayTrack, setDisplayTrack] = useState<string | null>(null);
+  const [currentTracks, setCurrentTracks] = useState<string[]>([]);
+  const [displayTracks, setDisplayTracks] = useState<string[]>([]);
 
   const startRandomization = () => {
     setIsRandomizing(true);
-    setCurrentTrack(null);
-    
+    setCurrentTracks([]);
+
     // Animate through random tracks
     let counter = 0;
-    const maxCycles = 20;
+    const maxCycles = 25;
     const interval = setInterval(() => {
-      const randomTrack = tracks[Math.floor(Math.random() * tracks.length)];
-      setDisplayTrack(randomTrack);
+      // Generate 4 random tracks for display
+      const randomTracks = [];
+      for (let i = 0; i < 4; i++) {
+        const randomTrack = tracks[Math.floor(Math.random() * tracks.length)];
+        randomTracks.push(randomTrack);
+      }
+      setDisplayTracks(randomTracks);
       counter++;
-      
+
       if (counter >= maxCycles) {
         clearInterval(interval);
-        const finalTrack = tracks[Math.floor(Math.random() * tracks.length)];
-        setCurrentTrack(finalTrack);
-        setDisplayTrack(finalTrack);
+        // Generate final 4 unique tracks
+        const finalTracks = [];
+        const usedIndices = new Set();
+        while (finalTracks.length < 4) {
+          const randomIndex = Math.floor(Math.random() * tracks.length);
+          if (!usedIndices.has(randomIndex)) {
+            usedIndices.add(randomIndex);
+            finalTracks.push(tracks[randomIndex]);
+          }
+        }
+        setCurrentTracks(finalTracks);
+        setDisplayTracks(finalTracks);
         setIsRandomizing(false);
       }
-    }, 100);
+    }, 120);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900 dark:to-gray-900 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full text-center">
+      <div className="max-w-4xl w-full text-center">
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-red-500 via-blue-500 to-green-500 bg-clip-text text-transparent mb-4">
@@ -50,9 +64,10 @@ export default function Home() {
             disabled={isRandomizing}
             className={`
               relative overflow-hidden px-8 py-4 rounded-full text-xl font-bold transition-all duration-300 transform hover:scale-105 active:scale-95
-              ${isRandomizing 
-                ? 'bg-gray-400 cursor-not-allowed' 
-                : 'bg-gradient-to-r from-red-500 to-blue-500 hover:from-red-600 hover:to-blue-600 shadow-lg hover:shadow-xl'
+              ${
+                isRandomizing
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-red-500 to-blue-500 hover:from-red-600 hover:to-blue-600 shadow-lg hover:shadow-xl'
               }
               text-white
             `}
@@ -63,49 +78,60 @@ export default function Home() {
                 Randomizing...
               </div>
             ) : (
-              '🎲 Randomize Track 🎲'
+              '🎲 Randomize 4 Tracks 🎲'
             )}
           </button>
         </div>
 
         {/* Track Display */}
-        <div className="min-h-[200px] flex items-center justify-center">
-          {currentTrack || displayTrack ? (
-            <div className="space-y-6">
-              <div className={`
-                text-4xl md:text-6xl font-bold text-gray-800 dark:text-gray-200 transition-all duration-300
+        <div className="min-h-[300px] flex items-center justify-center">
+          {currentTracks.length > 0 || displayTracks.length > 0 ? (
+            <div className="space-y-6 w-full">
+              <div
+                className={`
+                text-4xl md:text-6xl font-bold text-gray-800 dark:text-gray-200 transition-all duration-300 text-center
                 ${isRandomizing ? 'animate-pulse' : 'animate-bounce'}
-              `}>
+              `}
+              >
                 🏁
               </div>
-              <div className={`
-                text-2xl md:text-4xl font-bold text-gray-800 dark:text-gray-200 px-6 py-4 rounded-2xl
-                ${isRandomizing 
-                  ? 'bg-white/50 dark:bg-gray-800/50 animate-pulse' 
-                  : 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg'
-                }
-                transition-all duration-500
-              `}>
-                {displayTrack || currentTrack}
+
+              {/* Track Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
+                {(displayTracks.length > 0 ? displayTracks : currentTracks).map((track, index) => (
+                  <div
+                    key={`${track}-${index}`}
+                    className={`
+                      text-lg md:text-xl font-bold text-gray-800 dark:text-gray-200 px-4 py-3 rounded-xl
+                      ${
+                        isRandomizing
+                          ? 'bg-white/50 dark:bg-gray-800/50 animate-pulse'
+                          : 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg'
+                      }
+                      transition-all duration-500
+                    `}
+                  >
+                    {track}
+                  </div>
+                ))}
               </div>
-              {!isRandomizing && currentTrack && (
+
+              {!isRandomizing && currentTracks.length > 0 && (
                 <div className="text-lg text-gray-600 dark:text-gray-400 animate-fade-in">
-                  Ready to race! 🏎️
+                  Choose your track! 🏎️
                 </div>
               )}
             </div>
           ) : (
             <div className="text-gray-500 dark:text-gray-400 text-xl">
-              Click the button to randomize a track!
+              Click the button to randomize 4 tracks!
             </div>
           )}
         </div>
 
         {/* Track Count */}
         <div className="mt-12 text-gray-600 dark:text-gray-400">
-          <p className="text-lg">
-            {tracks.length} tracks available
-          </p>
+          <p className="text-lg">{tracks.length} tracks available</p>
         </div>
       </div>
     </div>
