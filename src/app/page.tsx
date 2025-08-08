@@ -63,7 +63,7 @@ export default function Home() {
             onClick={startRandomization}
             disabled={isRandomizing}
             className={`
-              relative overflow-hidden px-8 py-4 rounded-full text-xl font-bold transition-all duration-300 transform hover:scale-105 active:scale-95
+              relative overflow-hidden px-12 py-6 rounded-full text-2xl md:text-3xl font-bold transition-all duration-300 transform hover:scale-105 active:scale-95
               ${
                 isRandomizing
                   ? 'bg-gray-400 cursor-not-allowed'
